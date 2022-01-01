@@ -1,4 +1,4 @@
-package serverscreen;
+package Controller;
 
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
