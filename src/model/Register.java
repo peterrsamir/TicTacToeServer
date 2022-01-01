@@ -11,13 +11,19 @@ import java.io.Serializable;
  *
  * @author Azza Helmy
  */
-public class Register implements Serializable {
+public class Register  implements Serializable{
 
     private String userName;
     private String passward;
 
-    public Register (){
+    public Register() {
     }
+
+    public Register(String userName, String passward) {
+        this.userName = userName;
+        this.passward = passward;
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -33,14 +39,4 @@ public class Register implements Serializable {
     public void setPassward(String passward) {
         this.passward = passward;
     }
-
-    public Register(String passward) {
-        this.passward = passward;
-    }
-
-    public Register(String userName, String passward) {
-        this.userName = userName;
-        this.passward = passward;
-    }
 }
-

@@ -7,11 +7,14 @@ package Controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
-import Controller.GameServer.ServerHandler;
 
 /**
  * FXML Controller class
@@ -24,26 +27,40 @@ public class ServerScreenController implements Initializable {
     private Button btnStart;
     @FXML
     private Button btnStop;
-    GameServer outerobject = new GameServer();
-        ServerHandler chat = outerobject.new ServerHandler();
-//    private GameServer gameServer = new GameServer();
+    private ServerHandler handler = new ServerHandler();
+    private static GameServer gameServer;
+    PieChart pieChart = new PieChart();
+        
+        
+        ObservableList<Data> chartData = FXCollections.observableArrayList(
+                new PieChart.Data("OnLinePlayers", 25),
+                new PieChart.Data("OffLinePlayers", 12));
+        // pieChart.setData(chartData);
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
-    }    
+    }
+
+    Thread th = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            gameServer = new GameServer();
+        }
+    });
 
     @FXML
     private void onStartAction(ActionEvent event) {
-       
-        chat.startConnection();
+        th.start();
+        System.out.println("Starting server");
     }
 
     @FXML
     private void onStopAction(ActionEvent event) {
-        chat.stopConnection();
+        GameServer.closeConnection();
+        System.out.println("Srver Closed");
     }
-    
+
 }

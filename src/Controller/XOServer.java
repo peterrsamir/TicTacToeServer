@@ -16,14 +16,15 @@ import javafx.stage.Stage;
  * @author peter
  */
 public class XOServer extends Application {
-    
+
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("/serverscreen/ServerScreen.fxml"));
-        
-        Scene scene = new Scene(root);
-        
+        Parent root = FXMLLoader.load(getClass().getResource("/view/ServerScreen.fxml"));
+
+        Scene scene = new Scene(root, 700, 500);
         stage.setScene(scene);
+        stage.setMinHeight(630);
+        stage.setMinWidth(600);
         stage.show();
     }
 
@@ -33,5 +34,5 @@ public class XOServer extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    
+
 }

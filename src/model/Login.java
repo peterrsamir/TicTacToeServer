@@ -11,9 +11,13 @@ import java.io.Serializable;
  *
  * @author Azza Helmy
  */
-public class Login implements Serializable{
+public class Login implements Serializable {
+
     private String userName;
     private String passward;
+
+    public Login() {
+    }
 
     public Login(String userName, String passward) {
         this.userName = userName;
@@ -28,12 +32,12 @@ public class Login implements Serializable{
         this.userName = userName;
     }
 
-    public String getPassword() {
+    public String getPassward() {
         return passward;
     }
 
     public void setPassward(String passward) {
         this.passward = passward;
     }
-    
+
 }

@@ -5,12 +5,13 @@
  */
 package model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author zoz
  */
-public class Player {
-    private int id;
+public class Player implements Serializable {
     private String userName;
     private String password;
     private int isOnline;
@@ -29,14 +30,6 @@ public class Player {
     
     public Player(String userName) {
         this.userName = userName;
-    }
-    
-    public int getUserID(){
-        return id;
-    }
-    
-    public void setUserID(int id){
-        this.id = id;
     }
     
     public void setUserName(String userName) {

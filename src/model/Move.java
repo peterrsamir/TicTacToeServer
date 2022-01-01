@@ -5,12 +5,18 @@
  */
 package model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Azza Helmy
  */
-public class Move {
+public class Move implements Serializable{
     private int x;
+
+    public Move(int x) {
+        this.x = x;
+    }
 
     public int getX() {
         return x;

@@ -54,8 +54,7 @@ public class DBConnection {
         pst.setInt(5, 0);
         pst.setInt(6, 0);
         pst.setInt(7, 0);
-        pst.executeQuery();
-        
+        pst.executeUpdate();
     }
 
     public Vector<Player> getOnlinePlayers(String userName) throws SQLException {
@@ -65,12 +64,12 @@ public class DBConnection {
         onlinePlayers = new Vector<>();
         while (rs.next()) {
             Player p = new Player();
-            p.setUserID(rs.getInt(1));
+//            p.setUserID(rs.getInt(1));
             p.setUserName(rs.getString(2));
             p.setPassword(rs.getString(3));
             p.setIsOnline(rs.getInt(4));
             p.setIsRequest(rs.getInt(5));
-            p.setTotalScore(rs.getInt(7),rs.getInt(8));
+            p.setTotalScore(rs.getInt(7), rs.getInt(8));
             p.setNoOfWins(rs.getInt(7));
             p.setNoOfLoss(rs.getInt(8));
             onlinePlayers.add(p);
@@ -97,10 +96,10 @@ public class DBConnection {
         pst = con.prepareStatement(loginSQL);
         rs = pst.executeQuery();
         while (rs.next()) {
-            if (rs.getString(1).equals(l.getUserName()) && rs.getString(2).equals(l.getPassword())) {
+            if (rs.getString(1).equals(l.getUserName()) && rs.getString(2).equals(l.getPassward())) {
                 Player p = new Player();
                 p.setUserName(l.getUserName());
-                p.setPassword(l.getPassword());
+                p.setPassword(l.getPassward());
                 return true;
             }
         }
@@ -132,7 +131,7 @@ public class DBConnection {
         pst.setDate(1, m.getTimeDate());
         pst.setInt(2, m.getP1ID());
         pst.setInt(3, m.getP2ID());
-        pst.executeQuery();
+        pst.executeUpdate();
     }
 
     public void changeOnlineStatus(Player p) throws SQLException {
