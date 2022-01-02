@@ -19,7 +19,10 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Login;
+import model.Player;
+import model.LogOut;
 import model.Register;
+import sun.rmi.log.LogOutputStream;
 
 /**
  *
@@ -30,7 +33,7 @@ public class ServerHandler extends Thread {
 //    GameServer gameServer;
     InputStream is;
     OutputStream os;
-    ObjectOutputStream oos;    
+    ObjectOutputStream oos;
 //    ObjectInputStream ois;
     DBConnection db;
     Socket socket;
@@ -60,34 +63,58 @@ public class ServerHandler extends Thread {
         while (true) {
             try {
                 ObjectInputStream ois = new ObjectInputStream(is);
-                Object readObj = ois.readObject();
-
-                if (readObj instanceof Login) {
-                    try {
-                        boolean loginCheck = db.loginCheck((Login) readObj);
+                if (ois != null) {
+                    Object readObj = ois.readObject();
+                    if (readObj instanceof Login) {
+                        try {
+                            boolean loginCheck = db.loginCheck((Login) readObj);
 //                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
 //                    oos.writeObject(loginCheck);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                } else if (readObj instanceof Register) {
-                    oos = new ObjectOutputStream(os);
-                    Register r = (Register) readObj;
-                    System.out.println("userName: " + r.getUserName() + ", pass: " + r.getPassward());
-                    try {
-                        db.registerNewPlayer(r);
-                        oos.writeObject("Done");
-                        oos.flush();
-                    } catch (SQLException sQLException) {
-                        System.out.println(sQLException.toString());
-                        oos.writeObject("Error");
-                        oos.flush();
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } else if (readObj instanceof Register) {
+                        oos = new ObjectOutputStream(os);
+                        Register r = (Register) readObj;
+                        System.out.println("userName: " + r.getUserName() + ", pass: " + r.getPassward());
+                        try {
+                            db.registerNewPlayer(r);
+                            oos.writeObject("Done");
+                            oos.flush();
+                        } catch (SQLException sQLException) {
+                            System.out.println(sQLException.toString());
+                            oos.writeObject("Error");
+                            oos.flush();
+                        }
+                    } else if (readObj instanceof LogOut) {
+                        Player p = new Player();
+                        LogOut logOut = (LogOut) readObj;
+                        if (p.getIsOnline() == 1) {
+                            p.setIsRequest(0);
+                            p.setIsOnline(0);
+                            db.changeOnlineStatus(p);
+                            db.inGameStatus(p);
+                            oos = new ObjectOutputStream(os);
+                            oos.writeObject(0);
+                            oos.flush();
+                            ois.close();
+                            oos.close();
+                            socket.close();
+                        }else{
+                            System.out.println("something wrong");
+                        }
+
                     }
                 }
+
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("SQL exception");
+
             } catch (IOException ex) {
-                Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
