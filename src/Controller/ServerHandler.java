@@ -19,6 +19,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Login;
+import model.Player;
 import model.Register;
 
 /**
@@ -30,7 +31,7 @@ public class ServerHandler extends Thread {
 //    GameServer gameServer;
     InputStream is;
     OutputStream os;
-    ObjectOutputStream oos;    
+    ObjectOutputStream oos;
 //    ObjectInputStream ois;
     DBConnection db;
     Socket socket;
@@ -64,7 +65,20 @@ public class ServerHandler extends Thread {
 
                 if (readObj instanceof Login) {
                     try {
-                        boolean loginCheck = db.loginCheck((Login) readObj);
+                        Player login = db.loginCheck((Login) readObj);
+                        if (login != null) {
+                            login.setIsOnline(1);
+                            login.setIsRequest(1);
+                            db.changeOnlineStatus(login);
+                            db.inGameStatus(login);
+                            login = db.getPlayerInformation(login);
+                            oos = new ObjectOutputStream(os);
+                            oos.writeObject(login);
+                            
+                        } else {
+                            System.out.println(login);
+                      oos.writeObject(null);
+                        }
 //                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
 //                    oos.writeObject(loginCheck);
                     } catch (SQLException ex) {

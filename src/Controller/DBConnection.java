@@ -91,7 +91,7 @@ public class DBConnection {
         return topPlayers;
     }
 
-    public boolean loginCheck(Login l) throws SQLException {
+    public Player loginCheck(Login l) throws SQLException {
         String loginSQL = "SELECT USERNAME , PASSWORD FROM " + PLAYERS_TABLE;
         pst = con.prepareStatement(loginSQL);
         rs = pst.executeQuery();
@@ -100,10 +100,10 @@ public class DBConnection {
                 Player p = new Player();
                 p.setUserName(l.getUserName());
                 p.setPassword(l.getPassward());
-                return true;
+                return p;
             }
         }
-        return false;
+        return null;
     }
 
     public int getPlayerID(Player p) throws SQLException {
@@ -114,14 +114,13 @@ public class DBConnection {
     }
 
     public Player getPlayerInformation(Player p) throws SQLException {
-        String playerInformation = "SElECT ISONLINE, ISREQUEST, NOOFWINS, NOOFLOSS FROM " + PLAYERS_TABLE + " WHERE ID = ?";
+        String playerInformation = "SElECT NOOFWINS, NOOFLOSS FROM " + PLAYERS_TABLE + " WHERE ID = ?";
         pst = con.prepareStatement(playerInformation);
         pst.setInt(1, getPlayerID(p));
         rs = pst.executeQuery();
-        p.setIsOnline(rs.getInt(1));
-        p.setIsRequest(rs.getInt(2));
-        p.setNoOfWins(rs.getInt(3));
-        p.setNoOfLoss(rs.getInt(4));
+        p.setNoOfWins(rs.getInt(1));
+        p.setNoOfLoss(rs.getInt(2));
+        p.setTotalScore(rs.getInt(1), rs.getInt(2));
         return p;
     }
 
