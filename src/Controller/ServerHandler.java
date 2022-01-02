@@ -62,27 +62,28 @@ public class ServerHandler extends Thread {
                 Object readObj = ois.readObject();
 
                 if (readObj instanceof Login) {
-                    try {
-                        Player login = db.loginCheck((Login) readObj);
-                        System.out.println(login.getUserName() + " , " + login.getPassword());
+                    oos = new ObjectOutputStream(os);
+                    Player login = db.loginCheck((Login) readObj);
+                    if (login != null) {
+                        try {
                             login.setIsOnline(1);
                             login.setIsRequest(1);
                             db.changeOnlineStatus(login);
-                            System.out.println(login.getIsOnline());
                             db.inGameStatus(login);
-                            System.out.println(login.getIsRequest());
                             Player player = login;
                             player = db.getPlayerInformation(login);
-                            System.out.println(login.getNoOfWins());
-                            oos = new ObjectOutputStream(os);
                             oos.writeObject(login);
                             oos.flush();
 //                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
 //                    oos.writeObject(loginCheck);
-                    } catch (SQLException ex) {
-                        Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            oos.writeObject("Error");
+                            oos.flush();
+                        }
+                    } else {
                         oos.writeObject("Error");
-                        oos.close();
+                        oos.flush();
                     }
                 } else if (readObj instanceof Register) {
                     oos = new ObjectOutputStream(os);
@@ -102,6 +103,8 @@ public class ServerHandler extends Thread {
                 Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
