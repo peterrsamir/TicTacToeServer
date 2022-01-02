@@ -5,8 +5,6 @@
  */
 package Controller;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -66,23 +64,25 @@ public class ServerHandler extends Thread {
                 if (readObj instanceof Login) {
                     try {
                         Player login = db.loginCheck((Login) readObj);
-                        if (login != null) {
+                        System.out.println(login.getUserName() + " , " + login.getPassword());
                             login.setIsOnline(1);
                             login.setIsRequest(1);
                             db.changeOnlineStatus(login);
+                            System.out.println(login.getIsOnline());
                             db.inGameStatus(login);
-                            login = db.getPlayerInformation(login);
+                            System.out.println(login.getIsRequest());
+                            Player player = login;
+                            player = db.getPlayerInformation(login);
+                            System.out.println(login.getNoOfWins());
                             oos = new ObjectOutputStream(os);
                             oos.writeObject(login);
-                            
-                        } else {
-                            System.out.println(login);
-                      oos.writeObject(null);
-                        }
+                            oos.flush();
 //                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
 //                    oos.writeObject(loginCheck);
                     } catch (SQLException ex) {
                         Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                        oos.writeObject("Error");
+                        oos.close();
                     }
                 } else if (readObj instanceof Register) {
                     oos = new ObjectOutputStream(os);

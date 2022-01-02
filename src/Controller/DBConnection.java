@@ -92,7 +92,7 @@ public class DBConnection {
     }
 
     public Player loginCheck(Login l) throws SQLException {
-        String loginSQL = "SELECT USERNAME , PASSWORD FROM " + PLAYERS_TABLE;
+        String loginSQL = "SELECT USERNAME , PASSWORD FROM PLAYERS";
         pst = con.prepareStatement(loginSQL);
         rs = pst.executeQuery();
         while (rs.next()) {
@@ -110,17 +110,23 @@ public class DBConnection {
         String playerID = "SELECT ID FROM " + PLAYERS_TABLE + " WHERE USERNAME = ?";
         pst = con.prepareStatement(playerID);
         pst.setString(1, p.getUserName());
-        return pst.executeQuery().getInt(1);
+        rs = pst.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+        return -1;
     }
 
     public Player getPlayerInformation(Player p) throws SQLException {
-        String playerInformation = "SElECT NOOFWINS, NOOFLOSS FROM " + PLAYERS_TABLE + " WHERE ID = ?";
+        String playerInformation = "SElECT NOOFWINS, NOOFLOSS FROM PLAYERS WHERE USERNAME = ?";
         pst = con.prepareStatement(playerInformation);
-        pst.setInt(1, getPlayerID(p));
+        pst.setString(1, p.getUserName());
         rs = pst.executeQuery();
-        p.setNoOfWins(rs.getInt(1));
-        p.setNoOfLoss(rs.getInt(2));
-        p.setTotalScore(rs.getInt(1), rs.getInt(2));
+        if (rs.next()) {
+            p.setNoOfWins(rs.getInt(1));
+            p.setNoOfLoss(rs.getInt(2));
+        }
+        p.setTotalScore(p.getNoOfWins(), p.getNoOfLoss());
         return p;
     }
 
@@ -134,18 +140,18 @@ public class DBConnection {
     }
 
     public void changeOnlineStatus(Player p) throws SQLException {
-        String onlineSQL = "UPDATE " + PLAYERS_TABLE + " SET ISONLINE = ? WHERE ID = ?";
+        String onlineSQL = "UPDATE PLAYERS SET ISONLINE = ? WHERE USERNAME = ?";
         pst = con.prepareStatement(onlineSQL);
         pst.setInt(1, p.getIsOnline());
-        pst.setInt(2, getPlayerID(p));
+        pst.setString(2, p.getUserName());
         pst.executeUpdate();
     }
 
     public void inGameStatus(Player p) throws SQLException {
-        String inGameSQL = "UPDATE " + PLAYERS_TABLE + " SET ISREQUEST = ? WHERE ID = ?";
+        String inGameSQL = "UPDATE PLAYERS SET ISREQUEST = ? WHERE USERNAME = ?";
         pst = con.prepareStatement(inGameSQL);
         pst.setInt(1, p.getIsRequest());
-        pst.setInt(2, getPlayerID(p));
+        pst.setString(2, p.getUserName());
         pst.executeUpdate();
     }
 
