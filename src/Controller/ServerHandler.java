@@ -7,12 +7,14 @@ package Controller;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Vector;
@@ -66,13 +68,13 @@ public class ServerHandler extends Thread {
                 if (ois != null) {
                     Object readObj = ois.readObject();
                     if (readObj instanceof Login) {
-                        try {
-                            boolean loginCheck = db.loginCheck((Login) readObj);
-//                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
-//                    oos.writeObject(loginCheck);
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+//                        try {
+//                            boolean loginCheck = db.loginCheck((Login) readObj);
+//                           System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
+//                          oos.writeObject(loginCheck);
+//                        } catch (SQLException ex) {
+//                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
                     } else if (readObj instanceof Register) {
                         oos = new ObjectOutputStream(os);
                         Register r = (Register) readObj;
@@ -89,28 +91,34 @@ public class ServerHandler extends Thread {
                     } else if (readObj instanceof LogOut) {
                         Player p = new Player();
                         LogOut logOut = (LogOut) readObj;
-                        if (p.getIsOnline() == 1) {
-                            p.setIsRequest(0);
-                            p.setIsOnline(0);
+                        System.out.println(logOut.getUserName());
+                        p.setUserName(logOut.getUserName());
+                        p.setIsRequest(0);
+                        p.setIsOnline(0);
+                        try {
+                            System.out.println("in try");
                             db.changeOnlineStatus(p);
                             db.inGameStatus(p);
+                            
                             oos = new ObjectOutputStream(os);
-                            oos.writeObject(0);
+                            oos.writeObject("Logged out");
                             oos.flush();
                             ois.close();
                             oos.close();
                             socket.close();
-                        }else{
+                            clientsVector.remove(this);
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
                             System.out.println("something wrong");
+                            oos.writeObject("ERR");
+                            oos.flush();
                         }
 
                     }
                 }
 
-            } catch (SQLException ex) {
-                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("SQL exception");
-
+            } catch (SocketException s) {
+            } catch (EOFException d) {
             } catch (IOException ex) {
                 Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
