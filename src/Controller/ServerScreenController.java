@@ -6,15 +6,20 @@
 package Controller;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Side;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
+import javafx.scene.chart.PieChart;
 
 /**
  * FXML Controller class
@@ -23,25 +28,41 @@ import javafx.scene.control.Button;
  */
 public class ServerScreenController implements Initializable {
 
+    DBConnection db;
     @FXML
     private Button btnStart;
     @FXML
     private Button btnStop;
     private ServerHandler handler = new ServerHandler();
     private static GameServer gameServer;
-    PieChart pieChart = new PieChart();
-        
-        
-        ObservableList<Data> chartData = FXCollections.observableArrayList(
-                new PieChart.Data("OnLinePlayers", 25),
-                new PieChart.Data("OffLinePlayers", 12));
-        // pieChart.setData(chartData);
-    /**
-     * Initializes the controller class.
-     */
+    @FXML
+    PieChart pieChart;
+   
+
+    ObservableList<Data> chartData = FXCollections.observableArrayList(
+            
+            new PieChart.Data("online", 84),
+            new PieChart.Data("offline", 16));
+
+    public ServerScreenController() {
+        //db.getOnlinePlayers(p)
+        /*try {
+            this.x = db.getTopPlayers().indexOf(0);
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }*/
+    }
+
+    // pieChart.setTitle ("Online & offline Players");
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        
+        pieChart.setData(chartData);
+        pieChart.setLegendSide(Side.LEFT); 
+         pieChart.setClockwise(true); 
+         pieChart.setLabelsVisible(true);
+         
     }
 
     Thread th = new Thread(new Runnable() {

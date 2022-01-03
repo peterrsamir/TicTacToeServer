@@ -10,11 +10,11 @@
 
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.ServerScreenController">
   <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="58.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="89.0" />
-    <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="76.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="272.0" minWidth="10.0" prefWidth="249.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="228.0" minWidth="10.0" prefWidth="88.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="19.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="269.0" minWidth="10.0" prefWidth="269.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="291.0" minWidth="10.0" prefWidth="148.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="228.0" minWidth="10.0" prefWidth="97.0" />
       <ColumnConstraints hgrow="SOMETIMES" maxWidth="206.0" minWidth="9.0" prefWidth="58.0" />
   </columnConstraints>
   <rowConstraints>
@@ -33,6 +33,6 @@
          <font>
             <Font name="Colonna MT" size="25.0" />
          </font></Label>
-      <PieChart title="Onlin &amp; Offline Players" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+      <PieChart fx:id="pieChart" prefHeight="172.0" prefWidth="308.0" title=" Players" GridPane.columnIndex="2" GridPane.rowIndex="3" />
    </children>
 </GridPane>
