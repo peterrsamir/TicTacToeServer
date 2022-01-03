@@ -15,6 +15,19 @@ import java.util.Vector;
 public class TopOnlinePlayers implements Serializable{
     Vector <Player> onlinePlayers;
     Vector<Player> topPlayers;
+    String userName;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public TopOnlinePlayers(String userName) {
+        this.userName = userName;
+    }
 
     public TopOnlinePlayers() {
     }

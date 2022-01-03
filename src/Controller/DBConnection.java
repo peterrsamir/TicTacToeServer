@@ -44,7 +44,7 @@ public class DBConnection {
         }
     }
 
-    public void registerNewPlayer(Register register) throws SQLException {
+    public Player registerNewPlayer(Register register) throws SQLException {
         String insertSQL = "INSERT INTO " + PLAYERS_TABLE + " (USERNAME,PASSWORD,ISONLINE,ISREQUEST,TOTALSCORE,NOOFWINS,NOOFLOSS) VALUES (?,?,?,?,?,?,?)";
         pst = con.prepareStatement(insertSQL);
         pst.setString(1, register.getUserName());
@@ -55,11 +55,21 @@ public class DBConnection {
         pst.setInt(6, 0);
         pst.setInt(7, 0);
         pst.executeUpdate();
+        Player p =new Player();
+        p.setUserName(register.getUserName());
+        p.setPassword(register.getPassward());
+        p.setIsOnline(1);
+        p.setIsRequest(1);
+        p.setNoOfLoss(0);
+        p.setNoOfWins(0);
+        p.setTotalScore(0,0);
+        return p;
     }
 
     public Vector<Player> getOnlinePlayers(String userName) throws SQLException {
-        String onlineSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISONLINE = 1 AND USERNAME <> " + userName;
+        String onlineSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISONLINE = 1 AND USERNAME <> ?";
         pst = con.prepareStatement(onlineSQL);
+        pst.setString(1, userName);
         rs = pst.executeQuery();
         onlinePlayers = new Vector<>();
         while (rs.next()) {

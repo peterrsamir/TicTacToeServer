@@ -5,12 +5,16 @@
  */
 package Controller;
 
+import static Controller.DBConnection.onlinePlayers;
+import static Controller.DBConnection.topPlayers;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Vector;
@@ -19,6 +23,7 @@ import java.util.logging.Logger;
 import model.Login;
 import model.Player;
 import model.Register;
+import model.TopOnlinePlayers;
 
 /**
  *
@@ -63,48 +68,56 @@ public class ServerHandler extends Thread {
 
                 if (readObj instanceof Login) {
                     oos = new ObjectOutputStream(os);
-                    Player login = db.loginCheck((Login) readObj);
-                    if (login != null) {
-                        try {
-                            login.setIsOnline(1);
-                            login.setIsRequest(1);
-                            db.changeOnlineStatus(login);
-                            db.inGameStatus(login);
-                            Player player = login;
-                            player = db.getPlayerInformation(login);
-                            oos.writeObject(login);
-                            oos.flush();
-//                    System.out.println(((Login) readObj).getUserName()+ " , " +((Login) readObj).getPassword());
-//                    oos.writeObject(loginCheck);
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                            oos.writeObject("Error");
-                            oos.flush();
-                        }
-                    } else {
+                    try {
+                        Player login = db.loginCheck((Login) readObj);
+                        login.setIsOnline(1);
+                        login.setIsRequest(1);
+                        db.changeOnlineStatus(login);
+                        db.inGameStatus(login);
+                        Player player = login;
+                        player = db.getPlayerInformation(login);
+                        oos.writeObject(player);
+                        oos.flush();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
                         oos.writeObject("Error");
                         oos.flush();
                     }
+
                 } else if (readObj instanceof Register) {
                     oos = new ObjectOutputStream(os);
                     Register r = (Register) readObj;
                     System.out.println("userName: " + r.getUserName() + ", pass: " + r.getPassward());
                     try {
-                        db.registerNewPlayer(r);
-                        oos.writeObject("Done");
+                        Player p = db.registerNewPlayer(r);
+                        oos.writeObject(p);
                         oos.flush();
                     } catch (SQLException sQLException) {
                         System.out.println(sQLException.toString());
                         oos.writeObject("Error");
                         oos.flush();
                     }
+                } else if (readObj instanceof TopOnlinePlayers) {
+                    oos = new ObjectOutputStream(os);
+
+                    TopOnlinePlayers topOnlinePlayers = (TopOnlinePlayers) readObj;
+                    try {
+                        String str = topOnlinePlayers.getUserName();
+                        topOnlinePlayers.setOnlinePlayers(db.getOnlinePlayers(str));
+                        topOnlinePlayers.setTopPlayers(db.getTopPlayers());
+                        oos.writeObject(topOnlinePlayers);
+                        oos.flush();
+                    } catch (SQLException sQLException) {
+                        System.out.println(sQLException.toString());
+                        oos.writeObject("error 4");
+                        oos.flush();
+                    }
                 }
+            }catch(SocketException ex){} catch (EOFException ex) {
             } catch (IOException ex) {
                 Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SQLException ex) {
-                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
