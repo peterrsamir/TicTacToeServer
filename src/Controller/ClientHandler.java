@@ -14,8 +14,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Login;
@@ -23,63 +22,73 @@ import model.Player;
 import model.Register;
 import model.TopOnlinePlayers;
 import model.LogOut;
+import model.Request;
 
 /**
  *
  * @author zoz
  */
-public class ServerHandler extends Thread {
+public class ClientHandler extends Thread {
 
 //    GameServer gameServer;
     InputStream is;
     OutputStream os;
     ObjectOutputStream oos;
-//    ObjectInputStream ois;
+    ObjectInputStream ois;
     DBConnection db;
-    Socket socket;
-    Vector<ServerHandler> clientsVector = new Vector<ServerHandler>();
-    //HashMap<Integer, ChatHandler> clients = new HashMap<Integer, ChatHandler>();
+//    ObjectInputStream ois;
 
-    public ServerHandler() {
+    Socket socket;
+//    Vector<ServerHandler> clientsVector = new Vector<ServerHandler>();
+    static HashMap<String, ClientHandler> clientsVector = new HashMap<String, ClientHandler>();
+
+    public ClientHandler() {
     }
 
-    public ServerHandler(Socket cs) {
-        db = new DBConnection();
+    public ClientHandler(Socket cs) {
         try {
-
             os = cs.getOutputStream();
             is = cs.getInputStream();
             socket = cs;
-            db.openConnection();
-            clientsVector.add(this);
             start();
         } catch (IOException ex) {
-            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
     public void run() {
+        db = new DBConnection();
         while (true) {
             try {
-                ObjectInputStream ois = new ObjectInputStream(is);
+                ois = new ObjectInputStream(is);
                 if (ois != null) {
                     Object readObj = ois.readObject();
+                    System.out.println(readObj.toString());
                     if (readObj instanceof Login) {
                         oos = new ObjectOutputStream(os);
                         try {
+
                             Player login = db.loginCheck((Login) readObj);
-                            login.setIsOnline(1);
-                            login.setIsRequest(1);
-                            db.changeOnlineStatus(login);
-                            db.inGameStatus(login);
-                            Player player = login;
-                            player = db.getPlayerInformation(login);
-                            oos.writeObject(player);
-                            oos.flush();
+                            if (login != null) {
+                                login.setIsOnline(1);
+                                login.setIsRequest(1);
+                                db.changeOnlineStatus(login);
+                                db.inGameStatus(login);
+                                Player player = login;
+                                player = db.getPlayerInformation(login);
+                                clientsVector.put(player.getUserName(), this);
+                                System.out.println("No of Clients: " + clientsVector.size());
+                                oos.writeObject(player);
+                                oos.flush();
+                            } else {
+                                oos.writeObject("Login Error");
+                                oos.flush();
+                            }
+
                         } catch (SQLException ex) {
-                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-                            oos.writeObject("Error");
+                            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            oos.writeObject("Login Error");
                             oos.flush();
                         }
 
@@ -122,30 +131,70 @@ public class ServerHandler extends Thread {
                             System.out.println("in try");
                             db.changeOnlineStatus(p);
                             db.inGameStatus(p);
-
                             oos = new ObjectOutputStream(os);
-                            oos.writeObject("Logged out");
+                            System.out.println(oos.toString());
+                            oos.writeObject("LoggedOut");
+                            System.out.println(socket);
                             oos.flush();
                             ois.close();
                             oos.close();
                             socket.close();
-                            clientsVector.remove(this);
+                            clientsVector.remove(p.getUserName());
                         } catch (SQLException ex) {
-                            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
                             System.out.println("something wrong");
-                            oos.writeObject("ERR");
-                            oos.flush();
+                        }
+                    } else if (readObj instanceof Request) {
+                        Request sendRequest = (Request) readObj;
+                        System.out.println(sendRequest.toString());
+                        if (sendRequest.isRequest()) {
+                            System.out.println("sender: " + sendRequest.isRequest());
+                            sendRequestToPlayer(sendRequest.getReceiverUserName(), sendRequest);
+                        } else {
+                            System.out.println("receiver: " + sendRequest.isResponse());
+                            sendRequestToPlayer(sendRequest.getSendingUserName(), sendRequest);
                         }
                     }
                 }
 
             } catch (SocketException s) {
+//                     try {
+//                    is.close();
+//                    os.close();
+
+//                    socket.close();
+//                    this.stop();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             } catch (EOFException d) {
+//                try {
+//                    is.close();
+//                    os.close();
+//                    socket.close();
+//                    this.stop();
+//                } catch (IOException ex) {
+//                    Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             } catch (IOException ex) {
-                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+
+    public synchronized void sendRequestToPlayer(String userName, Request r) {
+        try {
+            ClientHandler ch = clientsVector.get(userName);
+            System.out.println("Receiver: " + ch.socket);
+            ch.oos = new ObjectOutputStream(ch.os);
+            System.out.println(ch.oos);
+            ch.oos.writeObject(r);
+            ch.oos.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
         }
     }
 
@@ -166,7 +215,7 @@ public class ServerHandler extends Thread {
     //            player2.dos.println(msg);
     //
     //        }
-    public void stopConnection() {
+    /* public void stopConnection() {
         System.out.println("stoping");
         Iterator it = clientsVector.iterator();
         while (it.hasNext()) {
@@ -178,14 +227,13 @@ public class ServerHandler extends Thread {
                 Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-        }
+        }*/
 //        try {
 ////            server.close();
 //        } catch (IOException ex) {
 //            Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-
-    }
+//    }
 
     /*public void startConnection() {
         System.out.println("starting");

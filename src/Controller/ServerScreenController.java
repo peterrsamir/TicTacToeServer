@@ -27,7 +27,7 @@ public class ServerScreenController implements Initializable {
     private Button btnStart;
     @FXML
     private Button btnStop;
-    private ServerHandler handler = new ServerHandler();
+    private ClientHandler handler = new ClientHandler();
     private static GameServer gameServer;
     private boolean flag = true;
     

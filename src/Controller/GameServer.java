@@ -8,15 +8,18 @@ import java.net.SocketException;
 public class GameServer {
 
     protected static ServerSocket server;
+    protected DBConnection db;
 //    protected Socket waiter;
 //    private static ServerHandler serverHandler;
 
     public GameServer() {
+        db = new DBConnection();
         try {
+            db.openConnection();
             server = new ServerSocket(5555);
             while (true) {
                 Socket waiter = server.accept();
-                new ServerHandler(waiter);
+                new ClientHandler(waiter);
             }
         } catch (SocketException ex) {
             ex.printStackTrace();
