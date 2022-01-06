@@ -37,12 +37,11 @@ public class ServerScreenController implements Initializable {
     private static GameServer gameServer;
     @FXML
     PieChart pieChart;
-   
 
     ObservableList<Data> chartData = FXCollections.observableArrayList(
-            
-            new PieChart.Data("online", 84),
-            new PieChart.Data("offline", 16));
+            new PieChart.Data("Online", 79),
+            new PieChart.Data("Offline", 16),
+            new PieChart.Data("Avilable", 5));
 
     public ServerScreenController() {
         //db.getOnlinePlayers(p)
@@ -57,12 +56,14 @@ public class ServerScreenController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
-        
+
         pieChart.setData(chartData);
-        pieChart.setLegendSide(Side.LEFT); 
-         pieChart.setClockwise(true); 
-         pieChart.setLabelsVisible(true);
-         
+        pieChart.setLegendSide(Side.LEFT);
+       pieChart.setClockwise(true);
+        pieChart.setLabelsVisible(true);
+//        pieChart.setPrefHeight(600); // no effect
+//        pieChart.setPrefWidth(600);
+
     }
 
     Thread th = new Thread(new Runnable() {

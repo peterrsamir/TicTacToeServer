@@ -31,7 +31,7 @@ public class XOServer extends Application {
         //root.getC
         Scene scene = new Scene(root, 700, 500);
         stage.setScene(scene);
-        stage.setMinHeight(630);
+        stage.setMinHeight(500);
         stage.setMinWidth(600);
         stage.show();
     }
