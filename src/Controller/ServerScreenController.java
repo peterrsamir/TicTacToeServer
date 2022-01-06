@@ -6,7 +6,10 @@
 package Controller;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -16,6 +19,7 @@ import javafx.geometry.Side;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
+import javafx.scene.chart.PieChart;
 
 /**
  * FXML Controller class
@@ -24,6 +28,7 @@ import javafx.scene.control.Button;
  */
 public class ServerScreenController implements Initializable {
 
+    DBConnection db;
     @FXML
     private Button btnStart;
     @FXML
@@ -31,7 +36,7 @@ public class ServerScreenController implements Initializable {
     private ClientHandler handler = new ClientHandler();
     private static GameServer gameServer;
     private boolean flag = true;
-    DBConnection db;
+    
     @FXML
     PieChart pieChart = new PieChart();
 
