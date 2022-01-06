@@ -12,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Side;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
@@ -30,22 +31,29 @@ public class ServerScreenController implements Initializable {
     private ClientHandler handler = new ClientHandler();
     private static GameServer gameServer;
     private boolean flag = true;
-    
-
+    DBConnection db;
+    @FXML
     PieChart pieChart = new PieChart();
 
     ObservableList<Data> chartData = FXCollections.observableArrayList(
-            new PieChart.Data("OnLinePlayers", 25),
-            new PieChart.Data("OffLinePlayers", 12));
-    // pieChart.setData(chartData);
+            new PieChart.Data("Online", 60),
+            new PieChart.Data("Offline", 10),
+            new PieChart.Data("Avilable", 30));
+//===============================================================
 
-    /**
-     * Initializes the controller class.
-     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        //db.getOnlinePlayers(userName);
         btnStop.setDisable(true);
-        // TODO
+        pieChart.setData(chartData);
+        pieChart.setLegendSide(Side.LEFT);
+        pieChart.setClockwise(false);
+        pieChart.setLabelsVisible(false);
+        //Setting the length of the label line 
+        pieChart.setLabelLineLength(50);
+        //Setting the start angle of the pie chart 
+        //pieChart.setStartAngle(180);
+
     }
 
     Thread th = new Thread(new Runnable() {
@@ -54,6 +62,7 @@ public class ServerScreenController implements Initializable {
             gameServer = new GameServer();
         }
     });
+//==========================================================
 
     @FXML
     private void onStartAction(ActionEvent event) {
@@ -66,6 +75,7 @@ public class ServerScreenController implements Initializable {
         btnStart.setDisable(true);
         System.out.println("Starting server");
     }
+//===========================================================
 
     @FXML
     private void onStopAction(ActionEvent event) {
