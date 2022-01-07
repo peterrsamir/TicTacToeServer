@@ -103,9 +103,17 @@ public class DBConnection {
         rs = pst.executeQuery();
         allonlinePlayers = new Vector<>();
         while (rs.next()) {
+            
             Player p = new Player();
-            p.setIsOnline(rs.getInt(1));
+            p.setUserName(rs.getString(2));
+            p.setPassword(rs.getString(3));
+            p.setIsOnline(rs.getInt(4));
+            p.setIsRequest(rs.getInt(5));
+            p.setTotalScore(rs.getInt(7), rs.getInt(8));
+            p.setNoOfWins(rs.getInt(7));
+            p.setNoOfLoss(rs.getInt(8));
             allonlinePlayers.add(p);
+          
         }
         return allonlinePlayers;
     }
@@ -119,7 +127,6 @@ public class DBConnection {
         onlinePlayers = new Vector<>();
         while (rs.next()) {
             Player p = new Player();
-//            p.setUserID(rs.getInt(1));
             p.setUserName(rs.getString(2));
             p.setPassword(rs.getString(3));
             p.setIsOnline(rs.getInt(4));
@@ -131,7 +138,7 @@ public class DBConnection {
         }
         return onlinePlayers;
     }
-
+//==============================================================
     public static Vector<Player> getTopPlayers() throws SQLException {
         String onlineSQL = "SELECT USERNAME , NOOFWINS, NOOFLOSS FROM " + PLAYERS_TABLE + " ORDER BY TOTALSCORE desc";
         pst = con.prepareStatement(onlineSQL);
