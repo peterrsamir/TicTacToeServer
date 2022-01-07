@@ -29,6 +29,9 @@ public class DBConnection {
     private static final String PLAYERS_TABLE = "PLAYERS";
     private static final String MATCHES_TABLE = "MATCHES";
     static Vector<Player> onlinePlayers;
+    static Vector<Player> allonlinePlayers;
+    static Vector<Player> avaliablePlayers;
+    static Vector<Player> offlinePlayers;
     static Vector<Player> topPlayers;
     static ResultSet rs;
     static Connection con;
@@ -44,7 +47,7 @@ public class DBConnection {
         }
     }
 
-    public Player registerNewPlayer(Register register) throws SQLException {
+    public static Player registerNewPlayer(Register register) throws SQLException {
         String insertSQL = "INSERT INTO " + PLAYERS_TABLE + " (USERNAME,PASSWORD,ISONLINE,ISREQUEST,TOTALSCORE,NOOFWINS,NOOFLOSS) VALUES (?,?,?,?,?,?,?)";
         pst = con.prepareStatement(insertSQL);
         pst.setString(1, register.getUserName());
@@ -55,18 +58,68 @@ public class DBConnection {
         pst.setInt(6, 0);
         pst.setInt(7, 0);
         pst.executeUpdate();
-        Player p =new Player();
+        Player p = new Player();
         p.setUserName(register.getUserName());
         p.setPassword(register.getPassward());
         p.setIsOnline(1);
         p.setIsRequest(1);
         p.setNoOfLoss(0);
         p.setNoOfWins(0);
-        p.setTotalScore(0,0);
+        p.setTotalScore(0, 0);
         return p;
     }
 
-    public Vector<Player> getOnlinePlayers(String userName) throws SQLException {
+//==================================================
+    public static  Vector<Player> getAvilablePlayers() throws SQLException {
+        String avaliableSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISREQUEST = 1 ";
+        pst = con.prepareStatement(avaliableSQL);
+        rs = pst.executeQuery();
+        avaliablePlayers = new Vector<>();
+        while (rs.next()) {
+            Player p = new Player();
+            p.setIsOnline(rs.getInt(1));
+            avaliablePlayers.add(p);
+        }
+        return avaliablePlayers;
+    }
+    //=====================================================
+      public static Vector<Player> getOfflinePlayers() throws SQLException {
+        String onlineSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISONLINE = 0 ";
+        pst = con.prepareStatement(onlineSQL);
+        rs = pst.executeQuery();
+        offlinePlayers = new Vector<>();
+        while (rs.next()) {
+            Player p = new Player();
+            p.setIsOnline(rs.getInt(1));
+            offlinePlayers.add(p);
+        }
+        return offlinePlayers;
+    }
+    //=========================================================
+
+    public static Vector<Player> getAllOnlinePlayers() throws SQLException {
+        String onlineSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISONLINE = 1 ";
+        pst = con.prepareStatement(onlineSQL);
+        rs = pst.executeQuery();
+        allonlinePlayers = new Vector<>();
+        while (rs.next()) {
+            
+            Player p = new Player();
+            p.setUserName(rs.getString(2));
+            p.setPassword(rs.getString(3));
+            p.setIsOnline(rs.getInt(4));
+            p.setIsRequest(rs.getInt(5));
+            p.setTotalScore(rs.getInt(7), rs.getInt(8));
+            p.setNoOfWins(rs.getInt(7));
+            p.setNoOfLoss(rs.getInt(8));
+            allonlinePlayers.add(p);
+          
+        }
+        return allonlinePlayers;
+    }
+//=======================================================
+
+    public static Vector<Player> getOnlinePlayers(String userName) throws SQLException {
         String onlineSQL = "SELECT * FROM " + PLAYERS_TABLE + " WHERE ISONLINE = 1 AND USERNAME <> ?";
         pst = con.prepareStatement(onlineSQL);
         pst.setString(1, userName);
@@ -74,7 +127,6 @@ public class DBConnection {
         onlinePlayers = new Vector<>();
         while (rs.next()) {
             Player p = new Player();
-//            p.setUserID(rs.getInt(1));
             p.setUserName(rs.getString(2));
             p.setPassword(rs.getString(3));
             p.setIsOnline(rs.getInt(4));
@@ -86,8 +138,8 @@ public class DBConnection {
         }
         return onlinePlayers;
     }
-
-    public Vector<Player> getTopPlayers() throws SQLException {
+//==============================================================
+    public static Vector<Player> getTopPlayers() throws SQLException {
         String onlineSQL = "SELECT USERNAME , NOOFWINS, NOOFLOSS FROM " + PLAYERS_TABLE + " ORDER BY TOTALSCORE desc";
         pst = con.prepareStatement(onlineSQL);
         rs = pst.executeQuery();
@@ -101,7 +153,7 @@ public class DBConnection {
         return topPlayers;
     }
 
-    public Player loginCheck(Login l) throws SQLException {
+    public static Player loginCheck(Login l) throws SQLException {
         String loginSQL = "SELECT USERNAME , PASSWORD FROM PLAYERS";
         pst = con.prepareStatement(loginSQL);
         rs = pst.executeQuery();
