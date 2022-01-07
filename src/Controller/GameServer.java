@@ -16,7 +16,7 @@ public class GameServer {
         db = new DBConnection();
         try {
             db.openConnection();
-            server = new ServerSocket(6666);
+            server = new ServerSocket(5005);
             while (true) {
                 Socket waiter = server.accept();
                 new ClientHandler(waiter);

@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import model.Login;
 import model.Player;
 import model.Register;
@@ -31,16 +32,13 @@ import model.Request;
  */
 public class ClientHandler extends Thread {
 
-//    GameServer gameServer;
     InputStream is;
     OutputStream os;
-    ObjectOutputStream oos;
-    ObjectInputStream ois;
+    ObjectOutputStream objectOutputStream;
+    ObjectInputStream objectInputStream;
     DBConnection db;
-//    ObjectInputStream ois;
 
     Socket socket;
-//    Vector<ServerHandler> clientsVector = new Vector<ServerHandler>();
     static HashMap<String, ClientHandler> clientsVector = new HashMap<String, ClientHandler>();
 
     public ClientHandler() {
@@ -49,10 +47,11 @@ public class ClientHandler extends Thread {
     public ClientHandler(Socket cs) {
         try {
             socket = cs;
-            os = cs.getOutputStream();
-            is = cs.getInputStream();
-            ois = new ObjectInputStream(is);
-            oos = new ObjectOutputStream(os);
+            System.out.println(socket);
+            os = socket.getOutputStream();
+            is = socket.getInputStream();
+            objectInputStream = new ObjectInputStream(is);
+            objectOutputStream = new ObjectOutputStream(os);
             start();
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -64,7 +63,7 @@ public class ClientHandler extends Thread {
         db = new DBConnection();
         while (true) {
             try {
-                Object readObj = ois.readObject();
+                Object readObj = objectInputStream.readObject();
                 System.out.println(readObj.toString());
                 if (readObj instanceof Login) {
 
@@ -79,18 +78,19 @@ public class ClientHandler extends Thread {
                             Player player = login;
                             player = db.getPlayerInformation(login);
                             clientsVector.put(player.getUserName(), this);
+                            System.out.println(player.getUserName());
                             System.out.println("No of Clients: " + clientsVector.size());
-                            oos.writeObject(player);
-                            oos.flush();
+                            objectOutputStream.writeObject(player);
+                            objectOutputStream.flush();
                         } else {
-                            oos.writeObject("Login Error");
-                            oos.flush();
+                            objectOutputStream.writeObject("Login Error");
+                            objectOutputStream.flush();
                         }
 
                     } catch (SQLException ex) {
                         Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-                        oos.writeObject("Login Error");
-                        oos.flush();
+                        objectOutputStream.writeObject("Login Error");
+                        objectOutputStream.flush();
                     }
 
                 } else if (readObj instanceof Register) {
@@ -98,12 +98,12 @@ public class ClientHandler extends Thread {
                     System.out.println("userName: " + r.getUserName() + ", pass: " + r.getPassward());
                     try {
                         Player p = db.registerNewPlayer(r);
-                        oos.writeObject(p);
-                        oos.flush();
+                        objectOutputStream.writeObject(p);
+                        objectOutputStream.flush();
                     } catch (SQLException sQLException) {
                         System.out.println(sQLException.toString());
-                        oos.writeObject("Error");
-                        oos.flush();
+                        objectOutputStream.writeObject("Error");
+                        objectOutputStream.flush();
                     }
                 } else if (readObj instanceof TopOnlinePlayers) {
                     TopOnlinePlayers topOnlinePlayers = (TopOnlinePlayers) readObj;
@@ -111,12 +111,12 @@ public class ClientHandler extends Thread {
                         String str = topOnlinePlayers.getUserName();
                         topOnlinePlayers.setOnlinePlayers(db.getOnlinePlayers(str));
                         topOnlinePlayers.setTopPlayers(db.getTopPlayers());
-                        oos.writeObject(topOnlinePlayers);
-                        oos.flush();
+                        objectOutputStream.writeObject(topOnlinePlayers);
+                        objectOutputStream.flush();
                     } catch (SQLException sQLException) {
                         System.out.println(sQLException.toString());
-                        oos.writeObject("error 4");
-                        oos.flush();
+                        objectOutputStream.writeObject("error 4");
+                        objectOutputStream.flush();
                     }
                 } else if (readObj instanceof LogOut) {
                     Player p = new Player();
@@ -129,12 +129,12 @@ public class ClientHandler extends Thread {
                         System.out.println("in try");
                         db.changeOnlineStatus(p);
                         db.inGameStatus(p);
-                        System.out.println(oos.toString());
-                        oos.writeObject("LoggedOut");
+                        System.out.println(objectOutputStream.toString());
+                        objectOutputStream.writeObject("LoggedOut");
                         System.out.println(socket);
-                        oos.flush();
-                        ois.close();
-                        oos.close();
+                        objectOutputStream.flush();
+                        objectInputStream.close();
+                        objectOutputStream.close();
                         socket.close();
                         clientsVector.remove(p.getUserName());
                     } catch (SQLException ex) {
@@ -150,19 +150,25 @@ public class ClientHandler extends Thread {
                     } else {
                         System.out.println("receiver: " + sendRequest.isResponse());
                         sendRequestToPlayer(sendRequest.getSendingUserName(), sendRequest);
-                    }
-                } else if (readObj instanceof Move) {
-                    Move move = (Move) readObj;
-                    System.out.println("m1:" + move.getPlayer1());
-                    System.out.println("m2" + move.getPlayer2());
-                    if (move.isTurn()) {
-                        System.out.println("sender: " + move.isTurn());
-                        sendMoveToPlayer(move.getPlayer1(), move);
-                    } else {
-                        System.out.println("receiver: " + move.isTurn());
-                        sendMoveToPlayer(move.getPlayer2(), move);
+                        if (sendRequest.isResponse()) {
+                            Platform.runLater(() -> {
+                                new GameSession(clientsVector.get(sendRequest.getReceiverUserName()), clientsVector.get(sendRequest.getReceiverUserName()));
+                            });
+                        }
                     }
                 }
+//                else if (readObj instanceof Move) {
+//                    Move move = (Move) readObj;
+//                    System.out.println("m1:" + move.getPlayer1());
+//                    System.out.println("m2" + move.getPlayer2());
+//                    if (move.isP1Turn()) {
+//                        System.out.println("sender: " + move.isP1Turn());
+//                        sendMoveToPlayer(move.getPlayer1(), move);
+//                    } else {
+//                        System.out.println("receiver: " + move.isP2Turn());
+//                        sendMoveToPlayer(move.getPlayer2(), move);
+//                    }
+//                }
             } catch (SocketException s) {
 //                     try {
 //                    is.close();
@@ -195,24 +201,8 @@ public class ClientHandler extends Thread {
         try {
             ClientHandler ch = clientsVector.get(userName);
             System.out.println("Receiver: " + ch.socket);
-            ch.oos = new ObjectOutputStream(ch.os);
-            System.out.println(ch.oos);
-            ch.oos.writeObject(r);
-            ch.oos.flush();
-        } catch (IOException ex) {
-            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println(ex);
-        }
-    }
-
-    public synchronized void sendMoveToPlayer(String userName, Move r) {
-        System.out.println(userName);
-        try {
-            ClientHandler ch = clientsVector.get(userName);
-            System.out.println("Receiver: " + ch.socket);
-            System.out.println(ch.oos);
-            ch.oos.writeObject(r);
-            ch.oos.flush();
+            ch.objectOutputStream.writeObject(r);
+            ch.objectOutputStream.flush();
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex);
