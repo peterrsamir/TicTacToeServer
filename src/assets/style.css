@@ -1,0 +1,38 @@
+
+/*#7C99AC غامق*/
+/*D3DEDC فاتح*/
+/*92A9BD*/
+.pan{
+      -fx-background-color: #ffffe3;
+    -fx-background-radius: 25px;
+}
+.cardpane{
+    -fx-background-color: #92A9BD;
+    -fx-background-radius: 15px;
+    -fx-text-fill:black;
+}
+.butt{
+   -fx-background-color:#F4EEA9;
+   -fx-text-color:#fffff;   
+}
+
+.backg{
+-fx-background-color:#F4EEA9;
+ -fx-background-radius: 15px;
+}
+.back{
+-fx-background-color:#7C99AC;
+}
+.chart {
+    -fx-pref-width: 316;
+    -fx-pref-height: 320; 
+    -fx-min-width: 116;
+    -fx-min-height: 120;
+    -fx-max-width: 316;
+    -fx-max-height: 320;
+}
+
+.chart-content {
+    -fx-padding: 20px;
+}
+

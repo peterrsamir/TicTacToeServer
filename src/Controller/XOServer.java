@@ -6,9 +6,13 @@
 package Controller;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 /**
@@ -17,10 +21,14 @@ import javafx.stage.Stage;
  */
 public class XOServer extends Application {
 
+    DBConnection db;
+
     @Override
     public void start(Stage stage) throws Exception {
+        
+        //StackPane root = new StackPane();
         Parent root = FXMLLoader.load(getClass().getResource("/view/ServerScreen.fxml"));
-
+        //root.getC
         Scene scene = new Scene(root, 700, 500);
         stage.setScene(scene);
         stage.setMinHeight(630);
@@ -28,9 +36,7 @@ public class XOServer extends Application {
         stage.show();
     }
 
-    /**
-     * @param args the command line arguments
-     */
+//==================================================
     public static void main(String[] args) {
         launch(args);
     }
