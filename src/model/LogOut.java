@@ -21,7 +21,6 @@ public class LogOut implements Serializable{
     public LogOut() {
     }
 
-    
     public String getUserName() {
         return userName;
     }
