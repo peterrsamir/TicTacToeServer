@@ -9,21 +9,23 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="pan" stylesheets="@../assets/style.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller.ServerScreenController">
   <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="19.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="69.0" />
-    <ColumnConstraints hgrow="SOMETIMES" maxWidth="269.0" minWidth="10.0" prefWidth="99.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="291.0" minWidth="10.0" prefWidth="169.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="228.0" minWidth="10.0" prefWidth="187.0" />
-      <ColumnConstraints hgrow="SOMETIMES" maxWidth="206.0" minWidth="9.0" prefWidth="58.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="0.0" prefWidth="8.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="236.0" minWidth="10.0" prefWidth="45.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="269.0" minWidth="0.0" prefWidth="80.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="351.0" minWidth="10.0" prefWidth="287.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="228.0" minWidth="0.0" prefWidth="38.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="206.0" minWidth="9.0" prefWidth="109.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="206.0" minWidth="10.0" prefWidth="33.0" />
   </columnConstraints>
   <rowConstraints>
-      <RowConstraints maxHeight="86.0" minHeight="10.0" prefHeight="58.0" vgrow="SOMETIMES" />
-      <RowConstraints maxHeight="143.0" minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="132.0" minHeight="10.0" prefHeight="71.0" vgrow="SOMETIMES" />
-    <RowConstraints maxHeight="141.0" minHeight="10.0" prefHeight="138.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="94.0" minHeight="10.0" prefHeight="92.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="143.0" minHeight="10.0" prefHeight="91.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="132.0" minHeight="10.0" prefHeight="65.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="167.0" minHeight="10.0" prefHeight="148.0" vgrow="SOMETIMES" />
     <RowConstraints maxHeight="62.0" minHeight="2.0" prefHeight="2.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
@@ -39,13 +41,13 @@
          <font>
             <Font name="Colonna MT" size="25.0" />
          </font></Label>
-      <PieChart fx:id="pieChart" minHeight="138.0" prefHeight="138.0" prefWidth="407.0" title=" Players" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-      <ImageView fitHeight="58.0" fitWidth="57.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="4" GridPane.rowIndex="1">
+      <PieChart fx:id="pieChart" maxWidth="336.0" minHeight="138.0" prefHeight="148.0" prefWidth="312.0" title=" Players" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+      <ImageView fitHeight="58.0" fitWidth="57.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="1">
          <image>
             <Image url="@../assets/startup.png" />
          </image>
       </ImageView>
-      <ImageView fitHeight="67.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="4" GridPane.rowIndex="2">
+      <ImageView fitHeight="67.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="3" GridPane.halignment="RIGHT" GridPane.rowIndex="2">
          <image>
             <Image url="@../assets/stop.png" />
          </image>
@@ -55,5 +57,15 @@
             <Image url="@../assets/data-server.png" />
          </image>
       </ImageView>
+      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="IP: " GridPane.columnIndex="4" GridPane.halignment="RIGHT">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Text fx:id="serverIp" strokeType="OUTSIDE" strokeWidth="0.0" text="150.1325.64" GridPane.columnIndex="5" GridPane.halignment="LEFT">
+         <font>
+            <Font name="Bodoni MT" size="19.0" />
+         </font>
+      </Text>
    </children>
 </GridPane>
