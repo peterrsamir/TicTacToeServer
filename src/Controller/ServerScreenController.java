@@ -14,13 +14,13 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Side;
-import javafx.scene.chart.PieChart;
 import javafx.scene.chart.PieChart.Data;
 import javafx.scene.control.Button;
 import javafx.scene.chart.PieChart;
@@ -47,7 +47,7 @@ public class ServerScreenController implements Initializable {
     private PieChart pieChart = new PieChart();
     @FXML
     private ListView<String> onLineList;
-    
+
     ObservableList<String> onlineObservableList;
 
     private ClientHandler handler = new ClientHandler();
@@ -56,59 +56,58 @@ public class ServerScreenController implements Initializable {
     private static Vector<Player> allonlinePlayers;
     private static Vector<Player> avaliablePlayers;
     private static Vector<Player> offlinePlayers;
+    private Thread thread;
     Vector<Player> players;
     int numOfOnlinePlayers;
     int numOfOfflinePlayers;
     int numOfAvaliablePlayers;
     String ip;
 
-//    ObservableList<Data> chartData = FXCollections.observableArrayList(
-//            new PieChart.Data("Online", numOfOnlinePlayers),
-//            new PieChart.Data("Offline", numOfOfflinePlayers),
-//            new PieChart.Data("Avilable", numOfAvaliablePlayers));
-        ObservableList<Data> chartData = FXCollections.observableArrayList(
-            new PieChart.Data("Online", 18),
-            new PieChart.Data("Offline", 10),
-            new PieChart.Data("Avilable", 20));
+    ObservableList<Data> chartData = FXCollections.observableArrayList(
+            new PieChart.Data("Online", numOfOnlinePlayers),
+            new PieChart.Data("Offline", numOfOfflinePlayers),
+            new PieChart.Data("Avilable", numOfAvaliablePlayers));
+
 //===============================================================
     @FXML
     private Rectangle recOnlinePlayers;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
-        new Thread(new Runnable() {
+        thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 DBConnection.openConnection();
-                while (true) {                    
-                    
-                try {
-                    players = DBConnection.getAllOnlinePlayers();
-                } catch (SQLException ex) {
-                    Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                while (true) {
+
+                    try {
+                        players = DBConnection.getAllOnlinePlayers();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    ArrayList<String> playerName = new ArrayList<>();
+
+                    for (Player p : players) {
+                        playerName.add(p.getUserName());
+                    }
+                    onlineObservableList = FXCollections.observableArrayList(playerName);
+                    onLineList.refresh();
+                    Platform.runLater(() -> {
+                        onLineList.setItems(onlineObservableList);
+
+                    });
+                    System.out.println("list" + onLineList.getItems());
+                    try {
+                        thread.sleep(5000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
-                ArrayList<String> playerName = new ArrayList<>();
-                
-                for (Player p : players) {
-                    playerName.add(p.getUserName());
-                }
-                onlineObservableList = FXCollections.observableArrayList(playerName);
-                onLineList.refresh();
-                onLineList.setItems(onlineObservableList);
-                
-                System.out.println("list" + onLineList.getItems());
-                }               
-               
+
             }
-          
-        }).start();
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
- //=================================================================
+        });
+        thread.start();
+        //=================================================================
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
 
@@ -118,10 +117,10 @@ public class ServerScreenController implements Initializable {
         serverIp.setText("" + ip);
 
         btnStop.setDisable(true);
-        
+
         pieChart.setData(chartData);//take the observableList
         //pieChart=new PieChart(chartData);//same
-        
+
         pieChart.setLegendSide(Side.LEFT);
         pieChart.setClockwise(true);
         pieChart.setLabelsVisible(true);
@@ -136,6 +135,45 @@ public class ServerScreenController implements Initializable {
         @Override
         public void run() {
             gameServer = new GameServer();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+
+                        try {
+                            players = DBConnection.getAllOnlinePlayers();
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        ArrayList<String> playerName = new ArrayList<>();
+
+                        for (Player p : players) {
+                            playerName.add(p.getUserName());
+                        }
+                        onlineObservableList = FXCollections.observableArrayList(playerName);
+                        onLineList.refresh();
+                        onLineList.setItems(onlineObservableList);
+
+                        System.out.println("list" + onLineList.getItems());
+
+                        try {
+                            allonlinePlayers = DBConnection.getAllOnlinePlayers();
+                            numOfOnlinePlayers = allonlinePlayers.size();
+                            offlinePlayers = DBConnection.getOfflinePlayers();
+                            numOfOfflinePlayers = offlinePlayers.size();
+                            avaliablePlayers = DBConnection.getAvilablePlayers();
+                            numOfAvaliablePlayers = avaliablePlayers.size();
+                        } catch (SQLException ex) {
+                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            });
 
         }
     });
@@ -151,22 +189,13 @@ public class ServerScreenController implements Initializable {
         btnStop.setDisable(false);
         btnStart.setDisable(true);
         System.out.println("Starting server");
-        try {
-            allonlinePlayers = DBConnection.getAllOnlinePlayers();
-            numOfOnlinePlayers = allonlinePlayers.size();
-            offlinePlayers = DBConnection.getOfflinePlayers();
-            numOfOfflinePlayers = offlinePlayers.size();
-            avaliablePlayers = DBConnection.getAvilablePlayers();
-            numOfAvaliablePlayers = avaliablePlayers.size();
-        } catch (SQLException ex) {
-            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+
     }
 //===========================================================
 
     @FXML
     private void onStopAction(ActionEvent event) {
-//        GameServer.closeConnection();
         th.suspend();
         flag = false;
         btnStop.setDisable(true);

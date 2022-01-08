@@ -53,6 +53,9 @@ public class ClientHandler extends Thread {
             objectInputStream = new ObjectInputStream(is);
             objectOutputStream = new ObjectOutputStream(os);
             start();
+        } catch (EOFException | SocketException s) {
+            closeConnection();
+            stop();
         } catch (IOException ex) {
             Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -169,25 +172,9 @@ public class ClientHandler extends Thread {
 //                        sendMoveToPlayer(move.getPlayer2(), move);
 //                    }
 //                }
-            } catch (SocketException s) {
-//                     try {
-//                    is.close();
-//                    os.close();
-
-//                    socket.close();
-//                    this.stop();
-//                } catch (IOException ex) {
-//                    Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-            } catch (EOFException d) {
-//                try {
-//                    is.close();
-//                    os.close();
-//                    socket.close();
-//                    this.stop();
-//                } catch (IOException ex) {
-//                    Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
-//                }
+            } catch (SocketException | EOFException s) {
+                closeConnection();
+                this.stop();
             } catch (IOException ex) {
                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ClassNotFoundException ex) {
@@ -208,44 +195,41 @@ public class ClientHandler extends Thread {
             System.out.println(ex);
         }
     }
-
-    /* public int getPlayer1ID() {
-        Player p = new Player();
-        return p.getUserID();
+    
+    public synchronized void sendMoveToPlayer(String userName, Move m) {
+        try {
+            ClientHandler ch = clientsVector.get(userName);
+            System.out.println("Receiver: " + ch.socket);
+            ch.objectOutputStream.writeObject(m);
+            ch.objectOutputStream.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
+        }
     }
 
-    public int getPlayer2ID() {
-        Player p = new Player();
-        return p.getUserID();
-    }*/
-    //        void sendMessageSelectedClient(String msg, int player1ID, int player2ID) {
-    //            ChatHandler player1 = clientsVector.get(player1ID);
-    //            ChatHandler player2 = clientsVector.get(player2ID);
-    //
-    //            player1.dos.println(msg);
-    //            player2.dos.println(msg);
-    //
-    //        }
-    /* public void stopConnection() {
-        System.out.println("stoping");
-        Iterator it = clientsVector.iterator();
-        while (it.hasNext()) {
+    public void closeConnection() {
+        try {
+            is.close();
+            os.close();
+            socket.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static void closeAllConnection(){
+        clientsVector.values().forEach((ch) -> {
             try {
-                os.close();
-                is.close();
-                socket.close();
+                ch.os.close();
+                ch.is.close();
+                ch.socket.close();
             } catch (IOException ex) {
-                Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-        }*/
-//        try {
-////            server.close();
-//        } catch (IOException ex) {
-//            Logger.getLogger(GameServer.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-
+        });
+    }
+    
     /*public void startConnection() {
         System.out.println("starting");
         new GameServer();
