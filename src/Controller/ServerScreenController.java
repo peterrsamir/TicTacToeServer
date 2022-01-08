@@ -63,10 +63,7 @@ public class ServerScreenController implements Initializable {
     int numOfAvaliablePlayers;
     String ip;
 
-    ObservableList<Data> chartData = FXCollections.observableArrayList(
-            new PieChart.Data("Online", numOfOnlinePlayers),
-            new PieChart.Data("Offline", numOfOfflinePlayers),
-            new PieChart.Data("Avilable", numOfAvaliablePlayers));
+    ObservableList<Data> chartData;
 
 //===============================================================
     @FXML
@@ -74,29 +71,20 @@ public class ServerScreenController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        getIpAddress();
+        serverIp.setText("" + ip);
+        btnStop.setDisable(true);
+
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 DBConnection.openConnection();
                 while (true) {
 
-                    try {
-                        players = DBConnection.getAllOnlinePlayers();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    ArrayList<String> playerName = new ArrayList<>();
+                    getOnlinePlayers();
 
-                    for (Player p : players) {
-                        playerName.add(p.getUserName());
-                    }
-                    onlineObservableList = FXCollections.observableArrayList(playerName);
-                    onLineList.refresh();
-                    Platform.runLater(() -> {
-                        onLineList.setItems(onlineObservableList);
+                    getPieChart();
 
-                    });
-                    System.out.println("list" + onLineList.getItems());
                     try {
                         thread.sleep(5000);
                     } catch (InterruptedException ex) {
@@ -107,27 +95,11 @@ public class ServerScreenController implements Initializable {
             }
         });
         thread.start();
-        //=================================================================
-        try {
-            ip = InetAddress.getLocalHost().getHostAddress();
-
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        serverIp.setText("" + ip);
-
-        btnStop.setDisable(true);
-
-        pieChart.setData(chartData);//take the observableList
-        //pieChart=new PieChart(chartData);//same
 
         pieChart.setLegendSide(Side.LEFT);
         pieChart.setClockwise(true);
         pieChart.setLabelsVisible(true);
-        //Setting the length of the label line 
         pieChart.setLabelLineLength(10);
-        //Setting the start angle of the pie chart 
-        //pieChart.setStartAngle(180);
 
     }
 //===============================================================
@@ -135,45 +107,6 @@ public class ServerScreenController implements Initializable {
         @Override
         public void run() {
             gameServer = new GameServer();
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-
-                        try {
-                            players = DBConnection.getAllOnlinePlayers();
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        ArrayList<String> playerName = new ArrayList<>();
-
-                        for (Player p : players) {
-                            playerName.add(p.getUserName());
-                        }
-                        onlineObservableList = FXCollections.observableArrayList(playerName);
-                        onLineList.refresh();
-                        onLineList.setItems(onlineObservableList);
-
-                        System.out.println("list" + onLineList.getItems());
-
-                        try {
-                            allonlinePlayers = DBConnection.getAllOnlinePlayers();
-                            numOfOnlinePlayers = allonlinePlayers.size();
-                            offlinePlayers = DBConnection.getOfflinePlayers();
-                            numOfOfflinePlayers = offlinePlayers.size();
-                            avaliablePlayers = DBConnection.getAvilablePlayers();
-                            numOfAvaliablePlayers = avaliablePlayers.size();
-                        } catch (SQLException ex) {
-                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-            });
 
         }
     });
@@ -189,8 +122,6 @@ public class ServerScreenController implements Initializable {
         btnStop.setDisable(false);
         btnStart.setDisable(true);
         System.out.println("Starting server");
-
-
     }
 //===========================================================
 
@@ -203,4 +134,57 @@ public class ServerScreenController implements Initializable {
         System.out.println("Srver Closed");
     }
 
+    //================================================
+    public void getIpAddress() {
+        try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+//=====================================================
+
+    public void getOnlinePlayers() {
+        try {
+            players = DBConnection.getAllOnlinePlayers();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ArrayList<String> playerName = new ArrayList<>();
+
+        for (Player p : players) {
+            playerName.add(p.getUserName());
+        }
+        onlineObservableList = FXCollections.observableArrayList(playerName);
+        onLineList.refresh();
+        Platform.runLater(() -> {
+            onLineList.setItems(onlineObservableList);
+
+        });
+
+        System.out.println("list" + onLineList.getItems());
+    }
+
+    //=================================
+    public void getPieChart() {
+        try {
+            allonlinePlayers = DBConnection.getAllOnlinePlayers();
+            numOfOnlinePlayers = allonlinePlayers.size();
+            offlinePlayers = DBConnection.getOfflinePlayers();
+            numOfOfflinePlayers = offlinePlayers.size();
+            avaliablePlayers = DBConnection.getAvilablePlayers();
+            numOfAvaliablePlayers = avaliablePlayers.size();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerScreenController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        chartData = FXCollections.observableArrayList(
+                new PieChart.Data("Online", numOfOnlinePlayers),
+                new PieChart.Data("Offline", numOfOfflinePlayers),
+                new PieChart.Data("Avilable", numOfAvaliablePlayers));
+        Platform.runLater(() -> {
+            pieChart.setData(chartData);
+        });
+    }
+    //====================================================== 
 }

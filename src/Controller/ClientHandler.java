@@ -69,7 +69,6 @@ public class ClientHandler extends Thread {
                 Object readObj = objectInputStream.readObject();
                 System.out.println(readObj.toString());
                 if (readObj instanceof Login) {
-
                     try {
 
                         Player login = db.loginCheck((Login) readObj);
