@@ -37,6 +37,7 @@ public class ClientHandler extends Thread {
     ObjectOutputStream objectOutputStream;
     ObjectInputStream objectInputStream;
     DBConnection db;
+    Player player = null;
 
     Socket socket;
     static HashMap<String, ClientHandler> clientsVector = new HashMap<String, ClientHandler>();
@@ -77,13 +78,14 @@ public class ClientHandler extends Thread {
                             login.setIsRequest(1);
                             db.changeOnlineStatus(login);
                             db.inGameStatus(login);
-                            Player player = login;
-                            player = db.getPlayerInformation(login);
-                            clientsVector.put(player.getUserName(), this);
-                            System.out.println(player.getUserName());
+                            Player p = login;
+                            p = db.getPlayerInformation(login);
+                            clientsVector.put(p.getUserName(), this);
+                            System.out.println(p.getUserName());
                             System.out.println("No of Clients: " + clientsVector.size());
-                            objectOutputStream.writeObject(player);
+                            objectOutputStream.writeObject(p);
                             objectOutputStream.flush();
+                            player = p;
                         } else {
                             objectOutputStream.writeObject("Login Error");
                             objectOutputStream.flush();
@@ -102,6 +104,7 @@ public class ClientHandler extends Thread {
                         Player p = db.registerNewPlayer(r);
                         objectOutputStream.writeObject(p);
                         objectOutputStream.flush();
+                        player = p;
                     } catch (SQLException sQLException) {
                         System.out.println(sQLException.toString());
                         objectOutputStream.writeObject("Error");
@@ -135,9 +138,7 @@ public class ClientHandler extends Thread {
                         objectOutputStream.writeObject("LoggedOut");
                         System.out.println(socket);
                         objectOutputStream.flush();
-                        objectInputStream.close();
-                        objectOutputStream.close();
-                        socket.close();
+                        closeConnection();
                         clientsVector.remove(p.getUserName());
                     } catch (SQLException ex) {
                         Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -173,10 +174,11 @@ public class ClientHandler extends Thread {
 //                }
             } catch (SocketException | EOFException s) {
                 closeConnection();
+                if(player != null){
+                    clientsVector.remove(player.getUserName());
+                }
                 this.stop();
-            } catch (IOException ex) {
-                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
@@ -194,7 +196,7 @@ public class ClientHandler extends Thread {
             System.out.println(ex);
         }
     }
-    
+
     public synchronized void sendMoveToPlayer(String userName, Move m) {
         try {
             ClientHandler ch = clientsVector.get(userName);
@@ -207,7 +209,7 @@ public class ClientHandler extends Thread {
         }
     }
 
-    public void closeConnection() {
+    public synchronized void closeConnection() {
         try {
             is.close();
             os.close();
@@ -217,18 +219,23 @@ public class ClientHandler extends Thread {
         }
     }
 
-    public static void closeAllConnection(){
-        clientsVector.values().forEach((ch) -> {
-            try {
-                ch.os.close();
-                ch.is.close();
-                ch.socket.close();
-            } catch (IOException ex) {
-                Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
+    public static synchronized void closeAllConnection() {
+        if (clientsVector != null) {
+            clientsVector.values().forEach((ch) -> {
+                try {
+                    ch.objectOutputStream.close();
+                    ch.objectInputStream.close();
+                    ch.os.close();
+                    ch.is.close();
+                    ch.socket.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            clientsVector.clear();
+        }
     }
-    
+
     /*public void startConnection() {
         System.out.println("starting");
         new GameServer();

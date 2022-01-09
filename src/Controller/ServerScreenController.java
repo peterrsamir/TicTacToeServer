@@ -127,6 +127,7 @@ public class ServerScreenController implements Initializable {
 
     @FXML
     private void onStopAction(ActionEvent event) {
+        ClientHandler.closeAllConnection();
         th.suspend();
         flag = false;
         btnStop.setDisable(true);
